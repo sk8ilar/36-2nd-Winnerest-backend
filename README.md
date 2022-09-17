@@ -50,6 +50,8 @@
  - &#128073; [WINNEREST 시연 영상 보러가기](https://www.youtube.com/watch?v=ylfITz5h1ps)
  - &#128073; [API 명세서 보러가기](https://docs.google.com/spreadsheets/d/1jLSj36m0BL2PonqRvVI3LOHWBiAV-856DLTmXqWqwT0/edit#gid=0)
 
+## 추가사항
+- docker 이용해서 배포 완료
 <br/>
 
 
