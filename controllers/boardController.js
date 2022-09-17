@@ -38,7 +38,7 @@ const deleteBoard = async (req, res) => {
     const userId = req.user.id;
     const { boardId } = req.params;
     await boardService.deleteBoard(userId, boardId);
-    res.sendStatus(204);
+    res.status(200).json({message : 'DELETE_BOARD_SUCCESS'});
 }
 
 
