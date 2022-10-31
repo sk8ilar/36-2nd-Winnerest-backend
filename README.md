@@ -31,18 +31,76 @@
  <img src="https://img.shields.io/badge/Trello-%23026AA7.svg?style=flat-square&logo=Trello&logoColor=white">
 
  
-## 구현 기능 
+## &#127919; 구현 기능 
  ### 백민석 
  - 카카오 API 구현 
+   - 프론트쪽에서 카카오 엑세스 토큰을 전달받고, fetch함수로 카카오 서버에 토큰을 전달하여 사용자 정보를 전달받는 과정으로 구성
  - AWS- S3를 이용한 사진 업로드와 삭제 구현 
+   - form 데이터를 받을 수 있게 만들어주는 multer 모듈 사용
  - 리뷰와 댓글 좋아요 CRUD 구현
 
- ### 길성민 
- - Unit test 구현 
- - 메인 페이지, 핀 상세 페이지 조회하기 구현
- - 보드 CRUD 구현 
- - 유저 팔로워 팔로잉 기능 구현 
+## &#127919; 문제 해결 경험(내가 구현한 기능중)
+ - 카카오 API 구현 문제
+   - 프론트쪽에서 카카오 엑세스 토큰을 백엔드 쪽으로 전달해주는 방향으로 구현
+   - ``` 
+     const logIn = async (accessToken) => {
 
+         const response = await fetch("https://kapi.kakao.com/v2/user/me", {
+         method: "GET",
+           headers: {
+           "Authorization": `Bearer ${accessToken}`,
+           "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+            },
+           })
+         .then(res => res.json())
+
+         const nickname = response.properties.nickname
+         const kakaoId = response.id
+         const profileImgUrl = response.properties.thumbnail_image
+
+         if (!nickname || !kakaoId) {
+         throw new ErrorCreater("KEY_ERROR", 400)
+          }
+
+         let user = await userDao.getUserByKakaoId(kakaoId);
+
+         if (!user) {
+         const result = await userDao.createUser(nickname, kakaoId, profileImgUrl);
+         user = await userDao.getUserById(result.insertId)
+          }
+         return jwt.sign({ sub: user.id, exp: Math.floor(Date.now() / 1000) + (600 * 600) }, process.env.JWT_SECRET);}       
+ - aws S3를 이용하여, 사진 업로드 기능 구현
+   - 수 많은 사진들을 전부 저장하기 위해서 용량이 무한대인 S3를 사용하는게 합리적이라고 판단하였음
+   - form 데이터 형식을 받기 위해 multer 모듈을 사용
+   - ``` 
+         const multer = require('multer');
+         const multerS3 = require('multer-s3');
+         const aws = require('aws-sdk');
+
+         const s3 = new aws.S3({
+            accessKeyId: process.env.AWS_ACCESS_KEY,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            region: `ap-northeast-2`})
+
+         const upload = multer({
+           storage: multerS3({
+             s3: s3,
+             bucket: process.env.bucket,
+             contentType: multerS3.AUTO_CONTENT_TYPE,
+             key: function (req, file, cb) {
+               cb(null, `${Date.now()}_${file.originalname}`);},}),})
+         module.exports = upload;
+ - global error handler 적용
+   - class 객체를 이용하여, error message와 status code를 커스터 마이징함.
+   - ``` 
+         module.exports = class ErrorCreater extends Error {
+         constructor(message, statusCode) {
+         super(message);
+         this.name = this.constructor.name;
+
+         Error.captureStackTrace(this, this.constructor);
+
+         this.statusCode = statusCode || 500;}};
 <br/>
 
 ## &#128218; 팀 프로젝트 자료
